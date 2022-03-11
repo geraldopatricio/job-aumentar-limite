@@ -1,0 +1,18 @@
+variables:
+    DOCKERFILE: ./Dockerfile
+
+image: docker:stable
+
+build:
+  stage: build
+  services:
+    - docker:dind
+  only:
+    - tags
+  before_script:
+    - TAG=$(echo "${CI_COMMIT_TAG//v}")
+    - docker login registry.gitlab.com -u $USER -p $PASSWORD
+  script:
+    - docker build --tag $CI_REGISTRY_IMAGE:$TAG --tag $CI_REGISTRY_IMAGE:latest -f $DOCKERFILE .
+    - docker push $CI_REGISTRY_IMAGE:$TAG
+    - docker push $CI_REGISTRY_IMAGE:latest
